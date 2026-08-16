@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { AudioWaveform, Menu, X } from "lucide-react";
+import { AudioWaveform, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/common/Button";
 import { Container } from "@/components/common/Container";
+import { useAuth } from "@/hooks/useAuth";
 import { cn, scrollToId } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -15,6 +16,8 @@ const NAV_ITEMS = [
 ];
 
 export function Navbar() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -35,6 +38,12 @@ export function Navbar() {
   const goTo = (target: string) => {
     setOpen(false);
     scrollToId(target);
+  };
+
+  const onLogout = async () => {
+    setOpen(false);
+    await signOut();
+    navigate("/", { replace: true });
   };
 
   return (
@@ -75,12 +84,27 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button variant="ghost" size="sm" to="/login">
-            Login
-          </Button>
-          <Button variant="primary" size="sm" to="/register">
-            Get Started
-          </Button>
+          {user ? (
+            <>
+              <Button variant="secondary" size="sm" to="/dashboard">
+                <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+                Dashboard
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onLogout}>
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                Log out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" to="/login">
+                Login
+              </Button>
+              <Button variant="primary" size="sm" to="/register">
+                Get Started
+              </Button>
+            </>
+          )}
         </div>
 
         <button
@@ -117,12 +141,27 @@ export function Navbar() {
                 </button>
               ))}
               <div className="mt-3 flex flex-col gap-2.5 border-t border-border pt-4">
-                <Button variant="secondary" size="lg" to="/login">
-                  Login
-                </Button>
-                <Button variant="primary" size="lg" to="/register">
-                  Get Started
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="secondary" size="lg" to="/dashboard">
+                      <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+                      Dashboard
+                    </Button>
+                    <Button variant="outline" size="lg" onClick={onLogout}>
+                      <LogOut className="h-4 w-4" aria-hidden="true" />
+                      Log out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="secondary" size="lg" to="/login">
+                      Login
+                    </Button>
+                    <Button variant="primary" size="lg" to="/register">
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </div>
             </Container>
           </motion.nav>

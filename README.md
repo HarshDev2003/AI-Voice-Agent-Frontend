@@ -48,6 +48,22 @@ npm run preview   # Preview the production build
 npm run lint      # Type-check without emitting
 ```
 
+### Environment Variables
+
+Copy `.env.example` to `.env` and set the values:
+
+```env
+# Base URL of the FastAPI backend (auth + users API).
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+| Variable            | Description                                  |
+| ------------------- | -------------------------------------------- |
+| `VITE_API_BASE_URL` | Backend origin, e.g. `http://localhost:8000` |
+
+The backend must be running and its CORS settings must include the frontend origin
+(`http://localhost:5173` in dev). See the backend `.env` for `CORS_ORIGINS`.
+
 ---
 
 ## Project Structure
@@ -56,7 +72,8 @@ npm run lint      # Type-check without emitting
 src/
 ├── assets/                  # Images, logos, icons (future use)
 ├── components/
-│   ├── common/              # Button, Container, Section, SectionHeading, Badge
+│   ├── common/              # Button, Container, Section, SectionHeading, Badge, PageLoader
+│   ├── auth/                # AuthLayout, FormField, OTPInput, ErrorSummary, ProtectedRoute
 │   ├── navbar/              # Navbar (desktop + mobile, scroll behavior)
 │   ├── hero/                # HeroSection, VoiceVisualizer
 │   ├── trust/               # Trust / social proof strip
@@ -74,15 +91,30 @@ src/
 │   ├── final-cta/           # Final call-to-action
 │   └── footer/              # Footer
 ├── pages/
-│   └── LandingPage.tsx      # Landing page composition
+│   ├── LandingPage.tsx      # Landing page composition
+│   ├── LoginPage.tsx        # Email + password login
+│   ├── RegisterPage.tsx     # Account creation
+│   ├── VerifyEmailPage.tsx  # Email OTP verification
+│   ├── ForgotPasswordPage.tsx
+│   ├── ResetPasswordPage.tsx
+│   └── DashboardPage.tsx    # Protected placeholder dashboard
 ├── layouts/
 │   └── PublicLayout.tsx     # Navbar + Outlet + Footer
 ├── routes/
 │   └── AppRoutes.tsx        # Route table
+├── context/
+│   └── AuthContext.tsx      # Auth session provider + useAuth
 ├── hooks/
 │   └── useScrollAnimation.ts
+├── services/
+│   ├── api.ts               # Axios instance (base URL + bearer token)
+│   ├── auth.ts              # Signup / login / OTP / reset calls
+│   └── userApi.ts           # /api/users/me calls
 ├── lib/
 │   ├── motion.ts            # Shared Framer Motion variants
+│   ├── session.ts           # Token + user storage
+│   ├── apiError.ts          # FastAPI error parsing
+│   ├── password.ts          # Password strength analysis
 │   ├── utils.ts             # cn(), scrollToId()
 │   └── voice.ts             # VoiceState type + labels
 ├── styles/
@@ -170,11 +202,16 @@ and `sitemap.xml` are configured in `index.html` and `public/`.
 | Route    | Page                          | Status               |
 | -------- | ----------------------------- | -------------------- |
 | `/`      | Landing page                  | Implemented          |
-| `/login` | Authentication               | Planned (placeholder redirect) |
-| `/register` | Registration              | Planned (placeholder redirect) |
-| `/dashboard`, `/assistant`, `/calls`, `/conversations`, `/settings` | App | Future phase |
+| `/login` | Login (email + password)      | Implemented          |
+| `/register` | Create account             | Implemented          |
+| `/verify-email` | Email OTP verification   | Implemented          |
+| `/forgot-password` | Request reset email     | Implemented          |
+| `/reset-password` | Set new password         | Implemented          |
+| `/dashboard` | User dashboard (protected) | Implemented (placeholder) |
+| `/assistant`, `/calls`, `/conversations`, `/settings` | App | Future phase |
 
-The landing page stays separate from authenticated application routes.
+Auth is handled through the backend's Supabase-backed FastAPI endpoints — the frontend never
+talks to Supabase directly.
 
 ---
 
@@ -194,17 +231,18 @@ POST /api/demo/conversation
 
 Phases:
 
-1. **Phase 1** — Static landing, mock demo (current)
-2. **Phase 2** — Connect authentication
+1. **Phase 1** — Static landing, mock demo
+2. **Phase 2** — Authentication (register, OTP verification, login, forgot/reset password) ✅
 3. **Phase 3** — Real voice demo
-4. **Phase 4** — User dashboard
+4. **Phase 4** — Full user dashboard
 
 ---
 
 ## Roadmap
 
-- [ ] Login / Register pages
-- [ ] User dashboard (assistant, calls, conversations, settings)
+- [x] Login / Register / Verify email / Forgot / Reset password pages
+- [x] Protected dashboard (placeholder) with profile fetch
+- [ ] Full user dashboard (assistant, calls, conversations, settings)
 - [ ] Real voice demo via WebSocket / WebRTC
 - [ ] Analytics / conversation history UI
 - [ ] Component tests (Vitest + Testing Library)
