@@ -14,10 +14,13 @@ interface ConversationPanelProps {
 }
 
 export function ConversationPanel({ messages, className }: ConversationPanelProps) {
-  const endRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const container = containerRef.current;
+    if (container && messages.length > 0) {
+      container.scrollTop = container.scrollHeight;
+    }
   }, [messages]);
 
   return (
@@ -37,7 +40,11 @@ export function ConversationPanel({ messages, className }: ConversationPanelProp
         </span>
       </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto p-5" aria-live="polite">
+      <div
+        ref={containerRef}
+        className="flex-1 space-y-4 overflow-y-auto p-5"
+        aria-live="polite"
+      >
         {messages.length === 0 && (
           <p className="flex h-full items-center justify-center text-sm text-muted">
             Press “Start Demo” and the conversation will play here.
@@ -91,7 +98,6 @@ export function ConversationPanel({ messages, className }: ConversationPanelProp
             );
           })}
         </AnimatePresence>
-        <div ref={endRef} />
       </div>
     </div>
   );
